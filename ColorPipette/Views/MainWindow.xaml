@@ -1,0 +1,811 @@
+﻿<Window x:Class="ColorPipette.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ColorPipette.Views"
+        xmlns:cmd="clr-namespace:ColorPipette.Commands"
+        xmlns:conv="clr-namespace:ColorPipette.Converters"
+        mc:Ignorable="d"
+        DataContext="{Binding MainWindowModel, Source={StaticResource Locator}}"
+        Height="300" Width="510" Topmost="True" ShowInTaskbar="False"
+        WindowStyle="None" AllowsTransparency="true" Background="Transparent"
+        Top="{Binding RelativeSource={RelativeSource Self}, Path=Height, Converter={StaticResource startPositionTopConverter}}"
+        Left="{Binding RelativeSource={RelativeSource Self}, Path=Width, Converter={StaticResource startPositionLeftConverter}}">
+    <Window.Resources>
+        <Style x:Key="PipetteButton">
+            <Setter Property="Button.Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="externBorder" Background="#04E061" Width="70" Height="70" 
+                                BorderThickness="3" BorderBrush="Aqua" CornerRadius="3">
+                            <Border x:Name="border" Margin="10">
+                                <Border.Background>
+                                    <ImageBrush ImageSource="/Resources/Images/cursor.png"/>
+                                </Border.Background>
+                            </Border>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter TargetName="externBorder" Property="Background" Value="#04FF61"/>
+                            </Trigger>
+                            <DataTrigger Binding="{Binding Path=TakePipetteFlag}" Value="true">
+                                <Setter TargetName="border" Property="Background" Value="#04FF61"/>
+                            </DataTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="CopyButton">
+            <Setter Property="Button.Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="externBorder" Background="Transparent" Width="30" Height="30" 
+                                BorderThickness="2" BorderBrush="Transparent" CornerRadius="3">
+                            <Border x:Name="border" Margin="3">
+                                <Border.Background>
+                                    <ImageBrush ImageSource="/Resources/Images/copy.png"/>
+                                </Border.Background>
+                            </Border>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter TargetName="externBorder" Property="BorderBrush" Value="#7DCCFC"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="CollapseButton">
+            <Setter Property="Button.Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid Height="32" Width="51" Background="Transparent">
+                            <Border x:Name="border" BorderThickness="0" CornerRadius="10" 
+                                    Width="20" Height="20"
+                                    Background="#808080">
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="border" 
+                                                             Storyboard.TargetProperty="Width" 
+                                                             From="20" To="32" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="border" 
+                                                             Storyboard.TargetProperty="Height" 
+                                                             From="20" To="10" Duration="0:0:0.1"/>
+                                            <ColorAnimation Storyboard.TargetName="border" 
+                                                            Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)"
+                                                            From="#808080" To="#00AAFF" Duration="0:0:0.1"/>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="border"
+                                                                           Storyboard.TargetProperty="CornerRadius">
+                                                <ObjectAnimationUsingKeyFrames.KeyFrames>
+                                                    <DiscreteObjectKeyFrame KeyTime="0:0:0.1">
+                                                        <DiscreteObjectKeyFrame.Value>
+                                                            <CornerRadius BottomLeft="5" BottomRight="5" TopLeft="5" TopRight="5" />
+                                                        </DiscreteObjectKeyFrame.Value>
+                                                    </DiscreteObjectKeyFrame>
+                                                </ObjectAnimationUsingKeyFrames.KeyFrames>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="border" 
+                                                             Storyboard.TargetProperty="Width" 
+                                                             From="32" To="20" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="border" 
+                                                             Storyboard.TargetProperty="Height" 
+                                                             From="10" To="20" Duration="0:0:0.1"/>
+                                            <ColorAnimation Storyboard.TargetName="border" 
+                                                            Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)"
+                                                            From="#00AAFF" To="#808080" Duration="0:0:0.1"/>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="border"
+                                                                           Storyboard.TargetProperty="CornerRadius">
+                                                <ObjectAnimationUsingKeyFrames.KeyFrames>
+                                                    <DiscreteObjectKeyFrame KeyTime="0:0:0.1">
+                                                        <DiscreteObjectKeyFrame.Value>
+                                                            <CornerRadius BottomLeft="10" BottomRight="10" TopLeft="10" TopRight="10"/>
+                                                        </DiscreteObjectKeyFrame.Value>
+                                                    </DiscreteObjectKeyFrame>
+                                                </ObjectAnimationUsingKeyFrames.KeyFrames>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="ExpandButton">
+            <Setter Property="Button.Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid Height="32" Width="51" Background="Transparent">
+                            <Border x:Name="border" BorderThickness="0" CornerRadius="10" 
+                                    Width="20" Height="20"
+                                    Background="#808080">
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="border" 
+                                                             Storyboard.TargetProperty="Width" 
+                                                             From="20" To="32" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="border" 
+                                                             Storyboard.TargetProperty="Height" 
+                                                             From="20" To="32" Duration="0:0:0.1"/>
+                                            <ColorAnimation Storyboard.TargetName="border" 
+                                                            Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)"
+                                                            From="#808080" To="#04E061" Duration="0:0:0.1"/>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="border"
+                                                                           Storyboard.TargetProperty="CornerRadius">
+                                                <ObjectAnimationUsingKeyFrames.KeyFrames>
+                                                    <DiscreteObjectKeyFrame KeyTime="0:0:0.1">
+                                                        <DiscreteObjectKeyFrame.Value>
+                                                            <CornerRadius BottomLeft="5" BottomRight="5" TopLeft="5" TopRight="5" />
+                                                        </DiscreteObjectKeyFrame.Value>
+                                                    </DiscreteObjectKeyFrame>
+                                                </ObjectAnimationUsingKeyFrames.KeyFrames>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="border" 
+                                                             Storyboard.TargetProperty="Width" 
+                                                             From="32" To="20" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="border" 
+                                                             Storyboard.TargetProperty="Height" 
+                                                             From="32" To="20" Duration="0:0:0.1"/>
+                                            <ColorAnimation Storyboard.TargetName="border" 
+                                                            Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)"
+                                                            From="#04E061" To="#808080" Duration="0:0:0.1"/>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="border"
+                                                                           Storyboard.TargetProperty="CornerRadius">
+                                                <ObjectAnimationUsingKeyFrames.KeyFrames>
+                                                    <DiscreteObjectKeyFrame KeyTime="0:0:0.1">
+                                                        <DiscreteObjectKeyFrame.Value>
+                                                            <CornerRadius BottomLeft="10" BottomRight="10" TopLeft="10" TopRight="10"/>
+                                                        </DiscreteObjectKeyFrame.Value>
+                                                    </DiscreteObjectKeyFrame>
+                                                </ObjectAnimationUsingKeyFrames.KeyFrames>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="CloseButton">
+            <Setter Property="Button.Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid x:Name="gridBtnClose" Height="32" Width="51" Background="Transparent">
+                            <Border x:Name="border0" BorderThickness="0" CornerRadius="10" 
+                                    Width="20" Height="20"
+                                    Background="#808080"
+                                    RenderTransformOrigin="0.5,0.5">
+                                <Border.RenderTransform>
+                                    <RotateTransform x:Name="borderRotate0"/>
+                                </Border.RenderTransform>
+                            </Border>
+                            <Border x:Name="border1" BorderThickness="0" CornerRadius="10" 
+                                    Width="20" Height="20"
+                                    Background="#808080"
+                                    RenderTransformOrigin="0.5,0.5">
+                                <Border.RenderTransform>
+                                    <RotateTransform x:Name="borderRotate1"/>
+                                </Border.RenderTransform>
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="border0" 
+                                                             Storyboard.TargetProperty="Width" 
+                                                             From="20" To="45.25" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="border0" 
+                                                             Storyboard.TargetProperty="Height" 
+                                                             From="20" To="10" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="border1" 
+                                                             Storyboard.TargetProperty="Width" 
+                                                             From="20" To="45.25" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="border1" 
+                                                             Storyboard.TargetProperty="Height" 
+                                                             From="20" To="10" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="borderRotate0" 
+                                                             Storyboard.TargetProperty="Angle" 
+                                                             From="0" To="45" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="borderRotate1" 
+                                                             Storyboard.TargetProperty="Angle" 
+                                                             From="0" To="-45" Duration="0:0:0.1"/>
+                                            <ColorAnimation Storyboard.TargetName="border0" 
+                                                            Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)"
+                                                            From="#808080" To="#FF4053" Duration="0:0:0.1"/>
+                                            <ColorAnimation Storyboard.TargetName="border1" 
+                                                            Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)"
+                                                            From="#808080" To="#FF4053" Duration="0:0:0.1"/>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="border0"
+                                                                           Storyboard.TargetProperty="CornerRadius">
+                                                <ObjectAnimationUsingKeyFrames.KeyFrames>
+                                                    <DiscreteObjectKeyFrame KeyTime="0:0:0.1">
+                                                        <DiscreteObjectKeyFrame.Value>
+                                                            <CornerRadius BottomLeft="5" BottomRight="5" TopLeft="5" TopRight="5" />
+                                                        </DiscreteObjectKeyFrame.Value>
+                                                    </DiscreteObjectKeyFrame>
+                                                </ObjectAnimationUsingKeyFrames.KeyFrames>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="border1"
+                                                                           Storyboard.TargetProperty="CornerRadius">
+                                                <ObjectAnimationUsingKeyFrames.KeyFrames>
+                                                    <DiscreteObjectKeyFrame KeyTime="0:0:0.1">
+                                                        <DiscreteObjectKeyFrame.Value>
+                                                            <CornerRadius BottomLeft="5" BottomRight="5" TopLeft="5" TopRight="5" />
+                                                        </DiscreteObjectKeyFrame.Value>
+                                                    </DiscreteObjectKeyFrame>
+                                                </ObjectAnimationUsingKeyFrames.KeyFrames>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="border0" 
+                                                             Storyboard.TargetProperty="Width" 
+                                                             From="45.25" To="20" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="border0" 
+                                                             Storyboard.TargetProperty="Height" 
+                                                             From="10" To="20" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="border1" 
+                                                             Storyboard.TargetProperty="Width" 
+                                                             From="45.25" To="20" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="border1" 
+                                                             Storyboard.TargetProperty="Height" 
+                                                             From="10" To="20" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="borderRotate0" 
+                                                             Storyboard.TargetProperty="Angle" 
+                                                             From="45" To="0" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="borderRotate1" 
+                                                             Storyboard.TargetProperty="Angle" 
+                                                             From="-45" To="0" Duration="0:0:0.1"/>
+                                            <ColorAnimation Storyboard.TargetName="border0" 
+                                                            Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)"
+                                                            From="#FF4053" To="#808080" Duration="0:0:0.1"/>
+                                            <ColorAnimation Storyboard.TargetName="border1" 
+                                                            Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)"
+                                                            From="#FF4053" To="#808080" Duration="0:0:0.1"/>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="border0"
+                                                                           Storyboard.TargetProperty="CornerRadius">
+                                                <ObjectAnimationUsingKeyFrames.KeyFrames>
+                                                    <DiscreteObjectKeyFrame KeyTime="0:0:0.1">
+                                                        <DiscreteObjectKeyFrame.Value>
+                                                            <CornerRadius BottomLeft="10" BottomRight="10" TopLeft="10" TopRight="10"/>
+                                                        </DiscreteObjectKeyFrame.Value>
+                                                    </DiscreteObjectKeyFrame>
+                                                </ObjectAnimationUsingKeyFrames.KeyFrames>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="border1"
+                                                                           Storyboard.TargetProperty="CornerRadius">
+                                                <ObjectAnimationUsingKeyFrames.KeyFrames>
+                                                    <DiscreteObjectKeyFrame KeyTime="0:0:0.1">
+                                                        <DiscreteObjectKeyFrame.Value>
+                                                            <CornerRadius BottomLeft="10" BottomRight="10" TopLeft="10" TopRight="10"/>
+                                                        </DiscreteObjectKeyFrame.Value>
+                                                    </DiscreteObjectKeyFrame>
+                                                </ObjectAnimationUsingKeyFrames.KeyFrames>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="LeftButton">
+            <Setter Property="Button.Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid Height="32" Width="51" Background="Transparent">
+                            <Border x:Name="border0" CornerRadius="10" 
+                                    Width="20" Height="20"
+                                    Background="#808080"
+                                    RenderTransformOrigin="0.05,0.9">
+                                <Border.RenderTransform>
+                                    <RotateTransform x:Name="borderRotate0"/>
+                                </Border.RenderTransform>
+                            </Border>
+                            <Border x:Name="border1" CornerRadius="10" 
+                                    Width="20" Height="20"
+                                    Background="#808080"
+                                    RenderTransformOrigin="0.05,0.1">
+                                <Border.RenderTransform>
+                                    <RotateTransform x:Name="borderRotate1"/>
+                                </Border.RenderTransform>
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="border0" 
+                                                             Storyboard.TargetProperty="Width" 
+                                                             From="20" To="37" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="border0" 
+                                                             Storyboard.TargetProperty="Height" 
+                                                             From="20" To="10" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="border1" 
+                                                             Storyboard.TargetProperty="Width" 
+                                                             From="20" To="37" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="border1" 
+                                                             Storyboard.TargetProperty="Height" 
+                                                             From="20" To="10" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="borderRotate0" 
+                                                             Storyboard.TargetProperty="Angle" 
+                                                             From="0" To="22.5" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="borderRotate1" 
+                                                             Storyboard.TargetProperty="Angle" 
+                                                             From="0" To="-22.5" Duration="0:0:0.1"/>
+                                            <ColorAnimation Storyboard.TargetName="border0" 
+                                                            Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)"
+                                                            From="#808080" To="#04E061" Duration="0:0:0.1"/>
+                                            <ColorAnimation Storyboard.TargetName="border1" 
+                                                            Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)"
+                                                            From="#808080" To="#04E061" Duration="0:0:0.1"/>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="border0"
+                                                                           Storyboard.TargetProperty="CornerRadius">
+                                                <ObjectAnimationUsingKeyFrames.KeyFrames>
+                                                    <DiscreteObjectKeyFrame KeyTime="0:0:0.1">
+                                                        <DiscreteObjectKeyFrame.Value>
+                                                            <CornerRadius BottomLeft="7.5" BottomRight="5" TopLeft="7.5" TopRight="5" />
+                                                        </DiscreteObjectKeyFrame.Value>
+                                                    </DiscreteObjectKeyFrame>
+                                                </ObjectAnimationUsingKeyFrames.KeyFrames>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="border1"
+                                                                           Storyboard.TargetProperty="CornerRadius">
+                                                <ObjectAnimationUsingKeyFrames.KeyFrames>
+                                                    <DiscreteObjectKeyFrame KeyTime="0:0:0.1">
+                                                        <DiscreteObjectKeyFrame.Value>
+                                                            <CornerRadius BottomLeft="7.5" BottomRight="5" TopLeft="7.5" TopRight="5" />
+                                                        </DiscreteObjectKeyFrame.Value>
+                                                    </DiscreteObjectKeyFrame>
+                                                </ObjectAnimationUsingKeyFrames.KeyFrames>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="border0" 
+                                                             Storyboard.TargetProperty="Width" 
+                                                             From="37" To="20" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="border0" 
+                                                             Storyboard.TargetProperty="Height" 
+                                                             From="10" To="20" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="border1" 
+                                                             Storyboard.TargetProperty="Width" 
+                                                             From="37" To="20" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="border1" 
+                                                             Storyboard.TargetProperty="Height" 
+                                                             From="10" To="20" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="borderRotate0" 
+                                                             Storyboard.TargetProperty="Angle" 
+                                                             From="22.5" To="0" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="borderRotate1" 
+                                                             Storyboard.TargetProperty="Angle" 
+                                                             From="-22.5" To="0" Duration="0:0:0.1"/>
+                                            <ColorAnimation Storyboard.TargetName="border0" 
+                                                            Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)"
+                                                            From="#04E061" To="#808080" Duration="0:0:0.1"/>
+                                            <ColorAnimation Storyboard.TargetName="border1" 
+                                                            Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)"
+                                                            From="#04E061" To="#808080" Duration="0:0:0.1"/>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="border0"
+                                                                           Storyboard.TargetProperty="CornerRadius">
+                                                <ObjectAnimationUsingKeyFrames.KeyFrames>
+                                                    <DiscreteObjectKeyFrame KeyTime="0:0:0.1">
+                                                        <DiscreteObjectKeyFrame.Value>
+                                                            <CornerRadius BottomLeft="10" BottomRight="10" TopLeft="10" TopRight="10"/>
+                                                        </DiscreteObjectKeyFrame.Value>
+                                                    </DiscreteObjectKeyFrame>
+                                                </ObjectAnimationUsingKeyFrames.KeyFrames>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="border1"
+                                                                           Storyboard.TargetProperty="CornerRadius">
+                                                <ObjectAnimationUsingKeyFrames.KeyFrames>
+                                                    <DiscreteObjectKeyFrame KeyTime="0:0:0.1">
+                                                        <DiscreteObjectKeyFrame.Value>
+                                                            <CornerRadius BottomLeft="10" BottomRight="10" TopLeft="10" TopRight="10"/>
+                                                        </DiscreteObjectKeyFrame.Value>
+                                                    </DiscreteObjectKeyFrame>
+                                                </ObjectAnimationUsingKeyFrames.KeyFrames>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="RightButton">
+            <Setter Property="Button.Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid Height="32" Width="51" Background="Transparent">
+                            <Border x:Name="border0" CornerRadius="10" 
+                                    Width="20" Height="20"
+                                    Background="#808080"
+                                    RenderTransformOrigin="0.95,0.1">
+                                <Border.RenderTransform>
+                                    <RotateTransform x:Name="borderRotate0"/>
+                                </Border.RenderTransform>
+                            </Border>
+                            <Border x:Name="border1" CornerRadius="10" 
+                                    Width="20" Height="20"
+                                    Background="#808080"
+                                    RenderTransformOrigin="0.95,0.9">
+                                <Border.RenderTransform>
+                                    <RotateTransform x:Name="borderRotate1"/>
+                                </Border.RenderTransform>
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="border0" 
+                                                             Storyboard.TargetProperty="Width" 
+                                                             From="20" To="37" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="border0" 
+                                                             Storyboard.TargetProperty="Height" 
+                                                             From="20" To="10" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="border1" 
+                                                             Storyboard.TargetProperty="Width" 
+                                                             From="20" To="37" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="border1" 
+                                                             Storyboard.TargetProperty="Height" 
+                                                             From="20" To="10" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="borderRotate0" 
+                                                             Storyboard.TargetProperty="Angle" 
+                                                             From="0" To="22.5" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="borderRotate1" 
+                                                             Storyboard.TargetProperty="Angle" 
+                                                             From="0" To="-22.5" Duration="0:0:0.1"/>
+                                            <ColorAnimation Storyboard.TargetName="border0" 
+                                                            Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)"
+                                                            From="#808080" To="#00AAFF" Duration="0:0:0.1"/>
+                                            <ColorAnimation Storyboard.TargetName="border1" 
+                                                            Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)"
+                                                            From="#808080" To="#00AAFF" Duration="0:0:0.1"/>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="border0"
+                                                                           Storyboard.TargetProperty="CornerRadius">
+                                                <ObjectAnimationUsingKeyFrames.KeyFrames>
+                                                    <DiscreteObjectKeyFrame KeyTime="0:0:0.1">
+                                                        <DiscreteObjectKeyFrame.Value>
+                                                            <CornerRadius BottomLeft="5" BottomRight="7.5" TopLeft="5" TopRight="7.5" />
+                                                        </DiscreteObjectKeyFrame.Value>
+                                                    </DiscreteObjectKeyFrame>
+                                                </ObjectAnimationUsingKeyFrames.KeyFrames>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="border1"
+                                                                           Storyboard.TargetProperty="CornerRadius">
+                                                <ObjectAnimationUsingKeyFrames.KeyFrames>
+                                                    <DiscreteObjectKeyFrame KeyTime="0:0:0.1">
+                                                        <DiscreteObjectKeyFrame.Value>
+                                                            <CornerRadius BottomLeft="5" BottomRight="7.5" TopLeft="5" TopRight="7.5" />
+                                                        </DiscreteObjectKeyFrame.Value>
+                                                    </DiscreteObjectKeyFrame>
+                                                </ObjectAnimationUsingKeyFrames.KeyFrames>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="border0" 
+                                                             Storyboard.TargetProperty="Width" 
+                                                             From="37" To="20" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="border0" 
+                                                             Storyboard.TargetProperty="Height" 
+                                                             From="10" To="20" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="border1" 
+                                                             Storyboard.TargetProperty="Width" 
+                                                             From="37" To="20" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="border1" 
+                                                             Storyboard.TargetProperty="Height" 
+                                                             From="10" To="20" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="borderRotate0" 
+                                                             Storyboard.TargetProperty="Angle" 
+                                                             From="22.5" To="0" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="borderRotate1" 
+                                                             Storyboard.TargetProperty="Angle" 
+                                                             From="-22.5" To="0" Duration="0:0:0.1"/>
+                                            <ColorAnimation Storyboard.TargetName="border0" 
+                                                            Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)"
+                                                            From="#00AAFF" To="#808080" Duration="0:0:0.1"/>
+                                            <ColorAnimation Storyboard.TargetName="border1" 
+                                                            Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)"
+                                                            From="#00AAFF" To="#808080" Duration="0:0:0.1"/>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="border0"
+                                                                           Storyboard.TargetProperty="CornerRadius">
+                                                <ObjectAnimationUsingKeyFrames.KeyFrames>
+                                                    <DiscreteObjectKeyFrame KeyTime="0:0:0.1">
+                                                        <DiscreteObjectKeyFrame.Value>
+                                                            <CornerRadius BottomLeft="10" BottomRight="10" TopLeft="10" TopRight="10"/>
+                                                        </DiscreteObjectKeyFrame.Value>
+                                                    </DiscreteObjectKeyFrame>
+                                                </ObjectAnimationUsingKeyFrames.KeyFrames>
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="border1"
+                                                                           Storyboard.TargetProperty="CornerRadius">
+                                                <ObjectAnimationUsingKeyFrames.KeyFrames>
+                                                    <DiscreteObjectKeyFrame KeyTime="0:0:0.1">
+                                                        <DiscreteObjectKeyFrame.Value>
+                                                            <CornerRadius BottomLeft="10" BottomRight="10" TopLeft="10" TopRight="10"/>
+                                                        </DiscreteObjectKeyFrame.Value>
+                                                    </DiscreteObjectKeyFrame>
+                                                </ObjectAnimationUsingKeyFrames.KeyFrames>
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <Window.Triggers>
+        <EventTrigger SourceName="leftButton" RoutedEvent="Button.Click">
+            <BeginStoryboard Name="beginStoryboardLeft">
+                <Storyboard>
+                    <DoubleAnimation Storyboard.TargetProperty="Left"
+                                     From="{Binding RelativeSource={RelativeSource AncestorType=local:MainWindow}, Path=Width,
+                                                    Converter={StaticResource startPositionLeftConverter}}" 
+                                     To="0" Duration="0:0:0"/>
+                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="mainBorder" 
+                                                   Storyboard.TargetProperty="CornerRadius">
+                        <DiscreteObjectKeyFrame KeyTime="0:0:0">
+                            <DiscreteObjectKeyFrame.Value>
+                                <CornerRadius TopLeft="0" TopRight="20" BottomRight="20" BottomLeft="0"/>
+                            </DiscreteObjectKeyFrame.Value>
+                        </DiscreteObjectKeyFrame>
+                    </ObjectAnimationUsingKeyFrames>
+                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="buttonsStackPanel" 
+                                                   Storyboard.TargetProperty="HorizontalAlignment">
+                        <DiscreteObjectKeyFrame KeyTime="0:0:0">
+                            <DiscreteObjectKeyFrame.Value>
+                                <HorizontalAlignment>Right</HorizontalAlignment>
+                            </DiscreteObjectKeyFrame.Value>
+                        </DiscreteObjectKeyFrame>
+                    </ObjectAnimationUsingKeyFrames>
+                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="mBorder" 
+                                                   Storyboard.TargetProperty="HorizontalAlignment">
+                        <DiscreteObjectKeyFrame KeyTime="0:0:0">
+                            <DiscreteObjectKeyFrame.Value>
+                                <HorizontalAlignment>Left</HorizontalAlignment>
+                            </DiscreteObjectKeyFrame.Value>
+                        </DiscreteObjectKeyFrame>
+                    </ObjectAnimationUsingKeyFrames>
+                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="mainBorder" 
+                                                   Storyboard.TargetProperty="HorizontalAlignment">
+                        <DiscreteObjectKeyFrame KeyTime="0:0:0">
+                            <DiscreteObjectKeyFrame.Value>
+                                <HorizontalAlignment>Left</HorizontalAlignment>
+                            </DiscreteObjectKeyFrame.Value>
+                        </DiscreteObjectKeyFrame>
+                    </ObjectAnimationUsingKeyFrames>
+                </Storyboard>
+            </BeginStoryboard>
+        </EventTrigger>
+        <EventTrigger SourceName="rightButton" RoutedEvent="Button.Click">
+            <BeginStoryboard Name="beginStoryboardRight">
+                <Storyboard>
+                    <DoubleAnimation Storyboard.TargetProperty="Left"
+                                     From="0" 
+                                     To="{Binding RelativeSource={RelativeSource AncestorType=local:MainWindow}, Path=Width,
+                                                  Converter={StaticResource startPositionLeftConverter}}" Duration="0:0:0"/>
+                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="mainBorder" 
+                                                   Storyboard.TargetProperty="CornerRadius">
+                        <DiscreteObjectKeyFrame KeyTime="0:0:0">
+                            <DiscreteObjectKeyFrame.Value>
+                                <CornerRadius TopLeft="20" TopRight="0" BottomRight="0" BottomLeft="20"/>
+                            </DiscreteObjectKeyFrame.Value>
+                        </DiscreteObjectKeyFrame>
+                    </ObjectAnimationUsingKeyFrames>
+                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="buttonsStackPanel" 
+                                                   Storyboard.TargetProperty="HorizontalAlignment">
+                        <DiscreteObjectKeyFrame KeyTime="0:0:0">
+                            <DiscreteObjectKeyFrame.Value>
+                                <HorizontalAlignment>Left</HorizontalAlignment>
+                            </DiscreteObjectKeyFrame.Value>
+                        </DiscreteObjectKeyFrame>
+                    </ObjectAnimationUsingKeyFrames>
+                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="mBorder" 
+                                                   Storyboard.TargetProperty="HorizontalAlignment">
+                        <DiscreteObjectKeyFrame KeyTime="0:0:0">
+                            <DiscreteObjectKeyFrame.Value>
+                                <HorizontalAlignment>Right</HorizontalAlignment>
+                            </DiscreteObjectKeyFrame.Value>
+                        </DiscreteObjectKeyFrame>
+                    </ObjectAnimationUsingKeyFrames>
+                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="mainBorder" 
+                                                   Storyboard.TargetProperty="HorizontalAlignment">
+                        <DiscreteObjectKeyFrame KeyTime="0:0:0">
+                            <DiscreteObjectKeyFrame.Value>
+                                <HorizontalAlignment>Right</HorizontalAlignment>
+                            </DiscreteObjectKeyFrame.Value>
+                        </DiscreteObjectKeyFrame>
+                    </ObjectAnimationUsingKeyFrames>
+                </Storyboard>
+            </BeginStoryboard>
+        </EventTrigger>
+    </Window.Triggers>
+    <Border x:Name="mainBorder" CornerRadius="20, 0, 0, 20" Background="#FBC219" Width="51" HorizontalAlignment="Right">
+        <Border.Triggers>
+            <EventTrigger RoutedEvent="MouseEnter">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <DoubleAnimation Storyboard.TargetProperty="Width"
+                                         From="51" To="510" Duration="0:0:0.2"/>
+                        <DoubleAnimation Storyboard.TargetName="mBorder" 
+                                         Storyboard.TargetProperty="Width"
+                                         From="0" To="455" Duration="0:0:0.2"/>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+            <EventTrigger RoutedEvent="MouseLeave">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <DoubleAnimation Storyboard.TargetProperty="Width"
+                                         From="510" To="51" Duration="0:0:0.2"/>
+                        <DoubleAnimation Storyboard.TargetName="mBorder" 
+                                         Storyboard.TargetProperty="Width"
+                                         From="455" To="0" Duration="0:0:0.2"/>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </Border.Triggers>
+        <Grid>
+            <StackPanel x:Name="buttonsStackPanel" HorizontalAlignment="Left" Margin="0,4,0,4">
+                <Button x:Name="closeButton" Style="{StaticResource CloseButton}" Margin="0, 5, 0, 5"
+                        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=local:MainWindow}}">
+                        <Button.Command>
+                            <cmd:CloseWindowCommand/>
+                        </Button.Command>
+                    </Button>
+                <Button x:Name="leftButton" Style="{StaticResource LeftButton}" Margin="0, 5, 0, 5"/>
+                <Button x:Name="rightButton" Style="{StaticResource RightButton}" Margin="0, 5, 0, 5"/>
+            </StackPanel>
+            <Border x:Name="mBorder" Background="#0D1117" CornerRadius="10" Margin="3" Width="0" HorizontalAlignment="Right">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="140"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Margin="10" CornerRadius="10" Background="{Binding CurrentColor}"/>
+                    <Grid Grid.Column="1" Margin="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="100"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" Style="{StaticResource PipetteButton}" HorizontalAlignment="Left"
+                                    cmd:MouseBehaviour.MouseDownCommand="{Binding StartTakePipetteCommand}"
+                                    cmd:MouseBehaviour.MouseUpCommand="{Binding StopTakePipetteCommand}">
+                            </Button>
+                            <Grid Grid.Column="2" Width="110" Height="70"  HorizontalAlignment="Left">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <TextBlock Grid.Row="0" Text="{Binding CurrentLeft, StringFormat=X:{0}}" Background="Transparent"
+                                           Foreground="#FF4053" FontSize="24" FontFamily="Cascadia Mono"/>
+                                <TextBlock Grid.Row="1" Text="{Binding CurrentTop, StringFormat=Y:{0}}" Background="Transparent"
+                                           Foreground="#04E061" FontSize="24" FontFamily="Cascadia Mono"/>
+                            </Grid>
+                            <Grid Grid.Column="1" Width="90" Height="70" HorizontalAlignment="Left">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <TextBlock Grid.Row="0" Text="{Binding ChannelR}" Background="Transparent"
+                                           Foreground="#FF4053" FontSize="24" FontFamily="Cascadia Mono"/>
+                                <TextBlock Grid.Row="1" Text="{Binding ChannelG}" Background="Transparent"
+                                           Foreground="#04E061" FontSize="24" FontFamily="Cascadia Mono"/>
+                                <TextBlock Grid.Row="2" Text="{Binding ChannelB}" Background="Transparent" 
+                                           Foreground="#00AAFF" FontSize="24" FontFamily="Cascadia Mono"/>
+                            </Grid>
+                        </Grid>
+                        <Grid Grid.Row="1">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <Grid Grid.Row="0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="70"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="40"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="HTML" 
+                                   Foreground="#FFD580" FontFamily="Cascadia Mono" FontSize="24" 
+                                   VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="1" Text="{Binding ColorHTML}" 
+                                   Foreground="Aqua" FontFamily="Cascadia Mono" FontSize="24" 
+                                   VerticalAlignment="Center"/>
+                                <Button Grid.Column="2" Style="{StaticResource CopyButton}" Command="{Binding ClipBoardHTMLCommand}"/>
+                            </Grid>
+                            <Grid Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="70"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="40"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="HEX" 
+                                   Foreground="#FFD580" FontFamily="Cascadia Mono" FontSize="24" 
+                                   VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="1" Text="{Binding ColorHEX}" 
+                                   Foreground="Aqua" FontFamily="Cascadia Mono" FontSize="24" 
+                                   VerticalAlignment="Center"/>
+                                <Button Grid.Column="2" Style="{StaticResource CopyButton}" Command="{Binding ClipBoardHEXCommand}"/>
+                            </Grid>
+                            <Grid Grid.Row="2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="70"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="40"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="DEC" 
+                                   Foreground="#FFD580" FontFamily="Cascadia Mono" FontSize="24" 
+                                   VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="1" Text="{Binding ColorDEC}" 
+                                   Foreground="Aqua" FontFamily="Cascadia Mono" FontSize="24" 
+                                   VerticalAlignment="Center"/>
+                                <Button Grid.Column="2" Style="{StaticResource CopyButton}" Command="{Binding ClipBoardDECCommand}"/>
+                            </Grid>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>
